@@ -29,10 +29,12 @@
 
 ```text
 scapy_project/
-├── main.py                  # القائمة التفاعلية الرئيسية (Interactive CLI Menu)
+├── main.py                  # القائمة التفاعلية الرئيسية في الطرفية (Interactive CLI Menu)
+├── gui.py                   # واجهة المستخدم الرسومية الشاملة لسطح المكتب بـ Tkinter (Desktop GUI)
 ├── sniffer.py               # السكريبت الأساسي البسيط للمراقبة المباشرة
 ├── requirements.txt         # متطلبات المشروع
 ├── README.md                # دليل الاستخدام والشرح
+├── TOOLS_GUIDE.md           # الدليل التفصيلي المرجعي لكل أداة
 ├── captures/                # مجلد حفظ ملفات الالتقاط (.pcap)
 │   └── sample_test.pcap     # ملف pcap تجريبي لاختبار التحليل
 └── modules/
@@ -51,7 +53,35 @@ scapy_project/
 
 ---
 
-## 🚀 التثبيت والتشغيل
+## 🖥️ واجهة المستخدم الرسومية لسطح المكتب (Tkinter Desktop GUI)
+
+يقدم المشروع واجهة رسومية متطورة وحديثة (**Tkinter GUI**) ذات طابع مظلم (Dark Theme) تجمع كافة الأدوات والوظائف الـ 10 في شاشة واحدة مريحة تدعم تعدد المهام والـ Multithreading دون تجمد النافذة:
+
+### 📦 متطلبات الواجهة (تثبيت حزمة Tkinter لنظام Linux):
+إذا لم تكن حزمة Tkinter مثبتة في بيئة النظام، يمكنك تثبيتها بأمر واحد:
+```bash
+sudo apt update && sudo apt install -y python3-tk
+```
+
+### 🚀 تشغيل الواجهة الرسومية:
+```bash
+# تشغيل الواجهة بصلاحيات المسؤول (موصى به لتشغيل الـ Sniffer وبناء الحزم):
+sudo ./venv/bin/python gui.py
+
+# أو تشغيلها كبرنامج عادي (لفحص الويب، السيرفرات، وتحليل ملفات الـ PCAP):
+./venv/bin/python gui.py
+```
+
+### ✨ مميزات الواجهة الرسومية (`gui.py`):
+1. **10 ألسنة تبويب مستقلة (Tabs)**: لكل أداة تبويب خاص بها منظم بكل المدخلات والجداول.
+2. **سجل أحداث حي ومباشر (Real-Time Live Console)**: أسفل الشاشة يعرض كافة نتائج العمليات والأخطاء مع إمكانية مسح السجل وحفظه.
+3. **عدم تجمد البرنامج (Background Worker Threads)**: جميع عمليات فحص المنافذ والتقاط الحزم والـ SSH تعمل في خيوط خلفية مستقلة (Daemon Threads) لتبقى الواجهة سلسة وسريعة الاستجابة.
+4. **نافذة تشريح الحزم العميقة (Deep Packet Inspector)**: عند النقر المزدوج على أي حزمة ملتقطة في جدول الـ Sniffer أو الـ PCAP تفتح نافذة منبثقة تفصل جميع طبقات الحزمة وحقولها بدقة دالة `.show()`.
+5. **شريط كاشف الصلاحيات (Root Privilege Badge)**: يوضح في أعلى النافذة ما إذا كانت صلاحيات Root مفعلة لدعم الـ Raw Sockets.
+
+---
+
+## 🚀 التثبيت والتشغيل عبر الطرفية (CLI)
 
 ### 1. تفعيل البيئة الافتراضية
 المشروع جاهز ومثبت بداخله Scapy و Requests و Paramiko:
@@ -89,7 +119,8 @@ Select an operation:
   8) 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
   9) 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
   10) 🔐 Remote SSH & SFTP Automation (Paramiko)   (Connect, Exec, Audit, SFTP)
-  11) ❌ Exit
+  11) 🖥️ Launch Desktop GUI (Tkinter)              (Multi-tab Desktop Interface)
+  12) ❌ Exit
 ```
 
 ---

@@ -280,6 +280,16 @@ def handle_wifi_beacon_sniffer():
         print("[-] Invalid option.")
 
 
+def handle_launch_gui():
+    print(f"\n{CLR_BOLD}--- [ Launching Tkinter Desktop GUI ] ---{CLR_RESET}")
+    gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gui.py")
+    try:
+        import subprocess
+        subprocess.run([sys.executable, gui_path])
+    except Exception as e:
+        print(f"{CLR_RED}[-] Failed to launch GUI: {e}{CLR_RESET}")
+
+
 def main():
     check_privileges()
     print_banner()
@@ -296,11 +306,12 @@ def main():
   {CLR_CYAN}8){CLR_RESET} 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
   {CLR_CYAN}9){CLR_RESET} 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
   {CLR_CYAN}10){CLR_RESET} 🔐 Remote SSH & SFTP Automation (Paramiko)   (Connect, Exec, Audit, SFTP)
-  {CLR_RED}11){CLR_RESET} ❌ Exit
+  {CLR_BOLD}{CLR_GREEN}11){CLR_RESET} 🖥️ Launch Desktop GUI (Tkinter)              (Multi-tab Desktop Interface)
+  {CLR_RED}12){CLR_RESET} ❌ Exit
 """
     while True:
         print(menu)
-        choice = input("Enter option [1-11]: ").strip()
+        choice = input("Enter option [1-12]: ").strip()
         if choice == "1":
             handle_sniffer()
         elif choice == "2":
@@ -322,11 +333,14 @@ def main():
         elif choice == "10":
             run_interactive_ssh_menu()
         elif choice == "11":
+            handle_launch_gui()
+        elif choice == "12":
             print(f"\n{CLR_CYAN}[*] Goodbye!{CLR_RESET}")
             sys.exit(0)
         else:
-            print(f"{CLR_RED}[-] Invalid option. Please select 1-11.{CLR_RESET}")
+            print(f"{CLR_RED}[-] Invalid option. Please select 1-12.{CLR_RESET}")
 
 
 if __name__ == "__main__":
     main()
+
