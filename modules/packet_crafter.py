@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-Custom Packet Crafter & Transmitter Module
-Uses Scapy's IP, TCP, UDP, ICMP, Ether, Raw, .show(), send(), and sendp()
-to build, inspect, and transmit custom packets at Layer 2 or Layer 3.
+Custom Packet Crafter & Transmitter Module (Compatibility Shim).
+Delegates to services.packet.crafter_service.
 """
 
 from scapy.all import IP, TCP, UDP, ICMP, Ether, Raw, send, sendp
+from services.packet.crafter_service import (
+    craft_tcp_packet,
+    craft_udp_packet,
+    craft_icmp_packet as _svc_craft_icmp,
+    craft_ethernet_packet as _svc_craft_eth,
+    send_crafted_packet,
+)
 
 
 def craft_ip_tcp_packet(
@@ -16,21 +22,15 @@ def craft_ip_tcp_packet(
     flags: str = "S",
     payload: str = ""
 ):
-    """
-    Crafts an IP / TCP packet with customizable fields and optional payload.
-    """
-    ip_kwargs = {"dst": dst_ip}
-    if src_ip:
-        ip_kwargs["src"] = src_ip  # IP Spoofing capability
-
-    ip_layer = IP(**ip_kwargs)
-    tcp_layer = TCP(sport=sport, dport=dport, flags=flags)
-    packet = ip_layer / tcp_layer
-
-    if payload:
-        packet = packet / Raw(load=payload.encode())
-
-    return packet
+    """Crafts an IP / TCP packet with customizable fields and optional payload."""
+    return craft_tcp_packet(
+        dst_ip=dst_ip,
+        dst_port=dport,
+        src_ip=src_ip,
+        src_port=sport,
+        flags=flags,
+        payload=payload
+    )
 
 
 def craft_ip_udp_packet(
@@ -40,34 +40,22 @@ def craft_ip_udp_packet(
     sport: int = 54321,
     payload: str = "Hello Scapy"
 ):
-    """
-    Crafts an IP / UDP packet with custom data payload.
-    """
-    ip_kwargs = {"dst": dst_ip}
-    if src_ip:
-        ip_kwargs["src"] = src_ip
-
-    ip_layer = IP(**ip_kwargs)
-    udp_layer = UDP(sport=sport, dport=dport)
-    packet = ip_layer / udp_layer
-
-    if payload:
-        packet = packet / Raw(load=payload.encode())
-
-    return packet
+    """Crafts an IP / UDP packet with custom data payload."""
+    return craft_udp_packet(
+        dst_ip=dst_ip,
+        dst_port=dport,
+        src_ip=src_ip,
+        src_port=sport,
+        payload=payload
+    )
 
 
 def craft_icmp_packet(dst_ip: str, src_ip: str = None, icmp_type: int = 8, code: int = 0):
-    """
-    Crafts an IP / ICMP packet (Echo Request by default: type=8, code=0).
-    """
+    """Crafts an IP / ICMP packet."""
     ip_kwargs = {"dst": dst_ip}
     if src_ip:
         ip_kwargs["src"] = src_ip
-
-    ip_layer = IP(**ip_kwargs)
-    icmp_layer = ICMP(type=icmp_type, code=code)
-    return ip_layer / icmp_layer
+    return IP(**ip_kwargs) / ICMP(type=icmp_type, code=code)
 
 
 def craft_ethernet_packet(
@@ -75,23 +63,12 @@ def craft_ethernet_packet(
     src_mac: str = None,
     inner_packet=None
 ):
-    """
-    Wraps an inner Layer 3 packet with an Ethernet Layer 2 header.
-    """
-    eth_kwargs = {"dst": dst_mac}
-    if src_mac:
-        eth_kwargs["src"] = src_mac
-
-    eth_layer = Ether(**eth_kwargs)
-    if inner_packet:
-        return eth_layer / inner_packet
-    return eth_layer
+    """Wraps an inner Layer 3 packet with an Ethernet Layer 2 header."""
+    return _svc_craft_eth(dst_mac=dst_mac, src_mac=src_mac, payload_pkt=inner_packet)
 
 
 def preview_and_send(packet, use_layer2: bool = False, count: int = 1, interval: float = 0.1, iface: str = None):
-    """
-    Shows packet dissection using .show() and transmits via send() or sendp().
-    """
+    """Shows packet dissection using .show() and transmits via send() or sendp()."""
     print("\n" + "=" * 60)
     print("      CRAFTED PACKET INSPECTION (.show())")
     print("=" * 60)

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Port Scanner & Host Reachability Module
-Uses Scapy's IP, ICMP, TCP, UDP, sr1, and send to probe hosts and open ports.
+Port Scanner & Host Reachability Module (Compatibility Shim).
+Delegates to services.scanner.port_scanner.
 """
 
-from scapy.all import IP, ICMP, TCP, UDP, sr1, send
+import sys
+from scapy.all import IP, ICMP, sr1
+from services.scanner.port_scanner import tcp_syn_scan_port as _svc_syn_scan, COMMON_PORTS as _SVC_COMMON_PORTS
 
-COMMON_PORTS = [21, 22, 23, 25, 53, 80, 110, 143, 443, 3306, 3389, 5432, 8000, 8080]
+COMMON_PORTS = sorted(list(_SVC_COMMON_PORTS.keys()))
 
 
 def icmp_ping(target_ip: str, timeout: int = 2, verbose: bool = False):
@@ -16,48 +18,21 @@ def icmp_ping(target_ip: str, timeout: int = 2, verbose: bool = False):
     """
     packet = IP(dst=target_ip) / ICMP()
     reply = sr1(packet, timeout=timeout, verbose=verbose)
-
-    if reply and reply.haslayer(ICMP):
-        # ICMP type 0 is Echo Reply
-        if reply[ICMP].type == 0:
-            return True, reply
+    if reply and reply.haslayer(ICMP) and reply[ICMP].type == 0:
+        return True, reply
     return False, None
 
 
 def tcp_syn_scan_port(target_ip: str, port: int, timeout: int = 1, verbose: bool = False):
     """
-    Performs a stealth TCP SYN scan on a specific port.
-    Sends SYN and inspects response flags (SYN-ACK=Open, RST=Closed).
+    Legacy wrapper returning status string ('Open', 'Closed', 'Filtered').
     """
-    # 1. Build IP and TCP layers with SYN flag
-    syn_packet = IP(dst=target_ip) / TCP(dport=port, flags="S")
-
-    # 2. Send and wait for 1 response packet using sr1()
-    reply = sr1(syn_packet, timeout=timeout, verbose=verbose)
-
-    if reply is None:
-        return "Filtered"
-    elif reply.haslayer(TCP):
-        flags = reply[TCP].flags
-        # 0x12 = SYN + ACK
-        if flags == 0x12 or flags == "SA":
-            # Send RST to tear down half-open connection cleanly
-            rst_packet = IP(dst=target_ip) / TCP(dport=port, flags="R")
-            send(rst_packet, verbose=False)
-            return "Open"
-        # 0x14 = RST + ACK
-        elif flags == 0x14 or flags == "RA" or "R" in str(flags):
-            return "Closed"
-    elif reply.haslayer(ICMP):
-        return "Filtered"
-
-    return "Unknown"
+    _, status, _ = _svc_syn_scan(target_ip, port, timeout=timeout)
+    return status
 
 
 def scan_ports(target_ip: str, ports: list = None, timeout: int = 1):
-    """
-    Scans multiple ports on target_ip and prints summary results.
-    """
+    """Scans multiple ports on target_ip and prints summary results."""
     if ports is None:
         ports = COMMON_PORTS
 
@@ -84,7 +59,6 @@ def scan_ports(target_ip: str, ports: list = None, timeout: int = 1):
 
 
 if __name__ == "__main__":
-    import sys
     target = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
     is_up, resp = icmp_ping(target)
     print(f"Host {target} is {'UP' if is_up else 'DOWN/Unresponsive'}")

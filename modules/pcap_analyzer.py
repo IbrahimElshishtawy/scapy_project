@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
 """
-PCAP File Analyzer Module
-Uses Scapy's rdpcap() and .show() to inspect and dissect pre-captured packet files.
+PCAP File Analyzer Module (Compatibility Shim).
+Delegates to services.packet.pcap_service.
 """
 
 import os
-from collections import Counter
-from scapy.all import rdpcap, IP, TCP, UDP, ICMP, ARP
+from services.packet.pcap_service import (
+    load_pcap_file,
+    calculate_pcap_statistics,
+    dissect_packet_details
+)
 
 
 def load_pcap(filepath: str):
-    """
-    Reads a .pcap file using rdpcap().
-    Returns a Scapy PacketList or None on error.
-    """
-    if not os.path.exists(filepath):
-        print(f"[-] Error: File '{filepath}' not found.")
-        return None
-
-    print(f"[*] Reading PCAP file: {filepath} ...")
+    """Reads a .pcap file using services.packet.pcap_service."""
     try:
-        packets = rdpcap(filepath)
+        print(f"[*] Reading PCAP file: {filepath} ...")
+        packets = load_pcap_file(filepath)
         print(f"[+] Loaded {len(packets)} packets successfully.")
         return packets
     except Exception as e:
@@ -29,52 +25,31 @@ def load_pcap(filepath: str):
 
 
 def print_pcap_statistics(packets):
-    """
-    Calculates and displays overview statistics for the packet capture.
-    """
+    """Displays overview statistics for the packet capture."""
     if not packets:
         print("[-] No packets to analyze.")
         return
 
-    proto_counter = Counter()
-    ip_counter = Counter()
-
-    for pkt in packets:
-        if IP in pkt:
-            ip_counter[pkt[IP].src] += 1
-            ip_counter[pkt[IP].dst] += 1
-            if TCP in pkt:
-                proto_counter["TCP"] += 1
-            elif UDP in pkt:
-                proto_counter["UDP"] += 1
-            elif ICMP in pkt:
-                proto_counter["ICMP"] += 1
-            else:
-                proto_counter[f"IP (proto={pkt[IP].proto})"] += 1
-        elif ARP in pkt:
-            proto_counter["ARP"] += 1
-        else:
-            proto_counter["Other"] += 1
+    stats = calculate_pcap_statistics(packets)
+    total = stats["total_packets"]
 
     print("\n" + "=" * 50)
     print("           PCAP FILE OVERVIEW")
     print("=" * 50)
-    print(f"Total Packets: {len(packets)}")
+    print(f"Total Packets: {total}")
     print("\n[ Protocols Distribution ]")
-    for proto, count in proto_counter.most_common():
-        pct = (count / len(packets)) * 100
+    for proto, count in stats["protocol_counts"].items():
+        pct = (count / total) * 100 if total > 0 else 0
         print(f"  - {proto:<15}: {count:<6} ({pct:.1f}%)")
 
     print("\n[ Top Active IP Addresses ]")
-    for ip_addr, count in ip_counter.most_common(5):
+    for ip_addr, count in stats["top_ips"][:5]:
         print(f"  - {ip_addr:<15}: {count} appearances")
     print("=" * 50 + "\n")
 
 
 def inspect_packet(packets, index: int):
-    """
-    Displays the deep structure of a specific packet using .show().
-    """
+    """Displays deep structure of packet using .show()."""
     if index < 0 or index >= len(packets):
         print(f"[-] Invalid index. Please choose between 0 and {len(packets) - 1}.")
         return
@@ -83,14 +58,12 @@ def inspect_packet(packets, index: int):
     print("\n" + "=" * 60)
     print(f"[*] Packet #{index} - Complete Layer Dissection (.show())")
     print("=" * 60)
-    pkt.show()
+    print(dissect_packet_details(pkt))
     print("=" * 60 + "\n")
 
 
 def list_packets_summary(packets, limit: int = 20):
-    """
-    Lists a brief summary of the first `limit` packets in the capture.
-    """
+    """Lists a brief summary of first packets."""
     print("\n" + "-" * 70)
     print(f"{'#':<5} | {'Summary'}")
     print("-" * 70)
