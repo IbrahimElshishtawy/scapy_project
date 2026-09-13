@@ -45,7 +45,8 @@ scapy_project/
     ├── wifi_manager.py      # فحص الشبكات، الباسوردات المحفوظة، الاتصال، وتدقيق الباسورد
     ├── gateway_scanner.py   # الاكتشاف التلقائي للراوتر وفحص منافذه وخدماته
     ├── wifi_sniffer.py      # تشريح حزم 802.11 Beacons وتحليل التشفير (WPA2/WPA3)
-    └── http_recon.py        # استكشاف الويب والـ APIs وترويسات الأمان (Requests)
+    ├── http_recon.py        # استكشاف الويب والـ APIs وترويسات الأمان (Requests)
+    └── ssh_manager.py       # إدارة السيرفرات وتنفيذ الأوامر ونقل الملفات عن بعد (Paramiko)
 ```
 
 ---
@@ -53,7 +54,7 @@ scapy_project/
 ## 🚀 التثبيت والتشغيل
 
 ### 1. تفعيل البيئة الافتراضية
-المشروع جاهز ومثبت بداخله Scapy و Requests:
+المشروع جاهز ومثبت بداخله Scapy و Requests و Paramiko:
 ```bash
 source venv/bin/activate
 ```
@@ -87,7 +88,8 @@ Select an operation:
   7) 🌐 Router Gateway Auto-Discovery & Port Scan (Auto-detect router, Scan services)
   8) 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
   9) 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
-  10) ❌ Exit
+  10) 🔐 Remote SSH & SFTP Automation (Paramiko)   (Connect, Exec, Audit, SFTP)
+  11) ❌ Exit
 ```
 
 ---
@@ -219,6 +221,20 @@ sudo ./venv/bin/python main.py
 
 ---
 
+### 10) 🔐 إدارة السيرفرات والتحكم عن بُعد عبر SSH و SFTP (Paramiko)
+* **ماذا تفعل؟**: تتيح الاتصال المشفّر بالسيرفرات والأجهزة البعيدة عبر SSH، تنفيذ الأوامر، إجراء فحوصات أمنية تلقائية، وسحب ملفات اللوجات ونقل الملفات بأمان عبر SFTP.
+* **خطوات الاستخدام**:
+  1. اختر الرقم `10`.
+  2. ستظهر لك قائمة فرعية لإدارة SSH:
+     - `1`: الاتصال بسيرفر بعيد (إدخال الـ Host, Port, Username, وكلمة المرور أو مسار المفتاح الخاص).
+     - `2`: تنفيذ أوامر Terminal على السيرفر البعيد واسترجاع المخرجات فوراً (`client.exec_command`).
+     - `3`: تشغيل فحص وتدقيق أمني آلي على السيرفر (نظام التشغيل، المنافذ المفتوحة، المستخدمين، ومحاولات الاختراق الفاشلة).
+     - `4`: سحب ملف أو Log من السيرفر البعيد وحفظه محلياً عبر SFTP (`sftp.get`).
+     - `5`: رفع ملف أو سكربت محلي إلى السيرفر البعيد عبر SFTP (`sftp.put`).
+     - `6`: إنهاء وإغلاق جلسة الاتصال بأمان (`client.close`).
+
+---
+
 ## 💻 تشغيل الوحدات بشكل مستقل (Standalone Execution)
 
 يمكنك أيضاً تشغيل أي وحدة برمجية مباشرة عبر سطر الأوامر دون فتح القائمة التفاعلية:
@@ -250,6 +266,9 @@ sudo ./venv/bin/python modules/packet_crafter.py
 
 # 9. تشغيل أداة استكشاف الويب والـ APIs عبر Requests (لا يحتاج sudo)
 ./venv/bin/python modules/http_recon.py
+
+# 10. تشغيل أداة التحكم عن بُعد ونقل الملفات عبر SSH و SFTP (لا يحتاج sudo)
+./venv/bin/python modules/ssh_manager.py
 ```
 
 ---
@@ -313,4 +332,28 @@ session = requests.Session()
 session.headers.update({"Authorization": "Bearer TOKEN"})
 r = session.get("https://httpbin.org/cookies/set/token/xyz123")
 print("Cookies preserved in session:", len(session.cookies))
+```
+
+### 6. إدارة السيرفرات وتنفيذ الأوامر عن بعد عبر `paramiko`:
+```python
+import paramiko
+
+# 1. إنشاء عميل SSH جديد
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+# 2. الاتصال بسيرفر عن بعد
+client.connect("192.168.1.50", port=22, username="root", password="my_password")
+
+# 3. تنفيذ أمر واسترجاع النتيجة
+stdin, stdout, stderr = client.exec_command("uname -a && uptime")
+print("Remote Output:\n", stdout.read().decode())
+
+# 4. نقل وسحب ملفات عبر SFTP
+sftp = client.open_sftp()
+sftp.get("/var/log/auth.log", "captures/remote_auth.log")
+sftp.close()
+
+# 5. إنهاء الاتصال بأمان
+client.close()
 ```

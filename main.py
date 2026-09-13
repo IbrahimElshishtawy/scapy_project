@@ -39,6 +39,7 @@ from modules.gateway_scanner import (
 )
 from modules.wifi_sniffer import live_beacon_sniff, analyze_wireless_pcap
 from modules.http_recon import run_interactive_http_menu
+from modules.ssh_manager import run_interactive_ssh_menu
 
 # Terminal colors
 CLR_CYAN = "\033[96m"
@@ -294,11 +295,12 @@ def main():
   {CLR_CYAN}7){CLR_RESET} 🌐 Router Gateway Auto-Discovery & Port Scan (Auto-detect router, Scan services)
   {CLR_CYAN}8){CLR_RESET} 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
   {CLR_CYAN}9){CLR_RESET} 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
-  {CLR_RED}10){CLR_RESET} ❌ Exit
+  {CLR_CYAN}10){CLR_RESET} 🔐 Remote SSH & SFTP Automation (Paramiko)   (Connect, Exec, Audit, SFTP)
+  {CLR_RED}11){CLR_RESET} ❌ Exit
 """
     while True:
         print(menu)
-        choice = input("Enter option [1-10]: ").strip()
+        choice = input("Enter option [1-11]: ").strip()
         if choice == "1":
             handle_sniffer()
         elif choice == "2":
@@ -318,10 +320,12 @@ def main():
         elif choice == "9":
             run_interactive_http_menu()
         elif choice == "10":
+            run_interactive_ssh_menu()
+        elif choice == "11":
             print(f"\n{CLR_CYAN}[*] Goodbye!{CLR_RESET}")
             sys.exit(0)
         else:
-            print(f"{CLR_RED}[-] Invalid option. Please select 1-10.{CLR_RESET}")
+            print(f"{CLR_RED}[-] Invalid option. Please select 1-11.{CLR_RESET}")
 
 
 if __name__ == "__main__":

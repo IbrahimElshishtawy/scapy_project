@@ -16,6 +16,7 @@
 8. [مكتشف الراوتر وفاحص منافذه وخدماته (gateway_scanner.py)](#8-مكتشف-الراوتر-وفاحص-منافذه-وخدماته-gateway_scannerpy)
 9. [فاحص حزم الـ 802.11 Beacons وتحليل التشفير (wifi_sniffer.py)](#9-فاحص-حزم-الـ-80211-beacons-وتحليل-التشفير-wifi_snifferpy)
 10. [أداة استكشاف الويب والـ APIs عبر Requests (http_recon.py)](#10-أداة-استكشاف-الويب-والـ-apis-عبر-requests-http_reconpy)
+11. [أداة إدارة السيرفرات والتحكم عن بعد عبر SSH و SFTP (ssh_manager.py)](#11-أداة-إدارة-السيرفرات-والتحكم-عن-بعد-عبر-ssh-و-sftp-ssh_managerpy)
 
 ---
 
@@ -304,6 +305,54 @@ Referrer-Policy              | Present     | Controls referrer information passe
 Permissions-Policy           | Missing     | Controls browser features allowed
 ======================================================================
 Security Headers Score: 5/6 (83.3%)
+```
+
+---
+
+## 11. أداة إدارة السيرفرات والتحكم عن بعد عبر SSH و SFTP (`ssh_manager.py`)
+
+### 📌 الوصف:
+أداة مخصصة لإدارة السيرفرات والأجهزة البعيدة عبر بروتوكول SSH المشفّر باستخدام مكتبة **Paramiko**، وتنفيذ الأوامر عن بُعد، وسحب ملفات الـ Logs، ونقل الملفات بأمان عبر SFTP، وإجراء فحوصات أمنية تلقائية على السيرفر البعيد.
+
+### ⚙️ كيف تعمل برمجياً؟
+- **`SSHClient()`**: تنشئ كائن عميل SSH جديد وتضبط سياسة قبول مفاتيح الخوادم (`paramiko.AutoAddPolicy()`).
+- **`client.connect(hostname, port, username, password/key)`**: تؤسس نفق اتصال مشفّر وآمن بالخادم البعيد باستخدام كلمة المرور أو مفتاح SSH الخاص (`id_rsa`).
+- **`client.exec_command(cmd)`**: تنفذ أي أمر shell على الخادم البعيد وتسترجع قنوات الإدخال والإخراج القياسي ورموز الخروج (`exit_status`, `stdout`, `stderr`).
+- **`client.open_sftp()` / `SFTPClient`**:
+  - `sftp.get(remote_path, local_path)`: سحب ملفات اللوجات أو النسخ الاحتياطية من السيرفر لجهازك المحلي بشكل آمن.
+  - `sftp.put(local_path, remote_path)`: رفع الملفات أو السكربتات من جهازك إلى السيرفر البعيد.
+- **`run_system_audit()`**: سكربت تدقيق أمني مدمج ينفذ تلقائياً استعلامات عن حالة النظام والمنافذ المفتوحة (`ss -tuln`) والمستخدمين المتصلين (`who`) ومحاولات تسجيل الدخول الفاشلة (`auth.log`).
+- **`client.close()`**: إنهاء وإغلاق جلسة الاتصال بأمان بعد الانتهاء.
+
+### 💻 أمر التشغيل المباشر:
+*(ملاحظة: لا تتطلب صلاحيات sudo لأنها بروتوكول اتصال طرفي عادي)*
+```bash
+# تشغيل القائمة التفاعلية لأداة SSH
+./venv/bin/python modules/ssh_manager.py
+```
+
+### 📋 مخرجات نموذجية:
+```text
+[*] Connecting to SSH server: 192.168.1.50:22 as 'root' ...
+[+] Successfully connected to root@192.168.1.50:22!
+
+=================================================================
+       REMOTE SYSTEM AUDIT: root@192.168.1.50
+=================================================================
+[+] Operating System & Kernel
+Linux 6.8.0-45-generic x86_64 GNU/Linux
+
+[+] Host Uptime & System Load
+ 03:40:15 up 12 days,  4:12,  2 users,  load average: 0.15, 0.08, 0.02
+
+[+] Currently Logged In Users
+root     pts/0        2026-09-13 03:39 (192.168.1.4)
+
+[+] Listening Network Ports
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*    
+tcp   LISTEN 0      4096       127.0.0.1:3306       0.0.0.0:*    
+tcp   LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    
+=================================================================
 ```
 
 ---
