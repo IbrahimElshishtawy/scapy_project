@@ -18,7 +18,7 @@ def get_banner() -> str:
       \\___ \\ |      / /\\ \\ |  ___/ \\   /      | |  |  <   
       ____) | |____ / ____ \\| |      | |       | |  | . \\  
      |_____/ \\_____/_/    \\_\\_|      |_|       |_|  |_|\\_\\ 
-                NETWORK TOOLKIT & PACKET SUITE (v2.0)
+                SCAPY NETWORK TOOLKIT & PACKET SUITE (v2.0)
  ================================================================
   Layer 2/3: IP(), TCP(), UDP(), ICMP(), ARP(), sr1(), send/sendp()
   Inspection: sniff(), wrpcap(), rdpcap(), .show(), 802.11 Beacons
