@@ -225,6 +225,7 @@ def handle_wifi_beacon_sniffer():
         iface = input("Enter wireless monitor mode interface (e.g. wlan0mon): ").strip()
         if iface:
             count = int(input("Enter beacon count (default: 30): ").strip() or "30")
+            # pyrefly: ignore [unexpected-keyword]
             live_beacon_sniff(iface=iface, count=count)
     else:
         print("[-] Invalid option.")
