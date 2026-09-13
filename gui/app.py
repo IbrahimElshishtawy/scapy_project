@@ -21,6 +21,7 @@ from gui.tabs import (
     BeaconTab,
     HttpTab,
     SshTab,
+    NetTesterTab,
 )
 from core.privileges import is_root
 
@@ -55,6 +56,7 @@ class ScapyToolkitApp:
         self.tab_beacon = BeaconTab(self.notebook, self)
         self.tab_http = HttpTab(self.notebook, self)
         self.tab_ssh = SshTab(self.notebook, self)
+        self.tab_net_tester = NetTesterTab(self.notebook, self)
 
         # Add tabs
         self.notebook.add(self.tab_sniff, text="📡 Sniffer")
@@ -67,6 +69,7 @@ class ScapyToolkitApp:
         self.notebook.add(self.tab_beacon, text="🛡️ Beacons")
         self.notebook.add(self.tab_http, text="🌍 Requests")
         self.notebook.add(self.tab_ssh, text="🔐 SSH/SFTP")
+        self.notebook.add(self.tab_net_tester, text="🌐 Net Tester")
 
         # 3. Bottom Log Console
         self.console = LogConsoleWidget(self.root, height=7)

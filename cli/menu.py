@@ -39,6 +39,7 @@ from modules.gateway_scanner import (
 from modules.wifi_sniffer import live_beacon_sniff, analyze_wireless_pcap
 from modules.http_recon import run_interactive_http_menu
 from modules.ssh_manager import run_interactive_ssh_menu
+from modules.network_tester import run_interactive_network_tester
 
 
 def handle_sniffer():
@@ -240,6 +241,11 @@ def handle_launch_gui():
         print(f"{COLORS['RED']}[-] Failed to launch GUI: {e}{COLORS['RESET']}")
 
 
+def handle_network_port_tester():
+    print(f"\n{COLORS['BOLD']}--- [ Network Port Tester & Service Auditor (Multi-Host) ] ---{COLORS['RESET']}")
+    run_interactive_network_tester()
+
+
 def run_interactive_menu():
     """Main interactive menu dispatch loop."""
     menu = f"""
@@ -254,12 +260,13 @@ def run_interactive_menu():
   {COLORS['CYAN']}8){COLORS['RESET']} 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
   {COLORS['CYAN']}9){COLORS['RESET']} 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
   {COLORS['CYAN']}10){COLORS['RESET']} 🔐 Remote SSH & SFTP Automation (Paramiko)   (Connect, Exec, Audit, SFTP)
-  {COLORS['BOLD']}{COLORS['GREEN']}11){COLORS['RESET']} 🖥️ Launch Desktop GUI (Tkinter)              (Multi-tab Desktop Interface)
-  {COLORS['RED']}12){COLORS['RESET']} ❌ Exit
+  {COLORS['BOLD']}{COLORS['YELLOW']}11){COLORS['RESET']} 🌐 Network Port Tester & Service Auditor     (Subnet Sweep, Multi-Host Ports & Banners)
+  {COLORS['BOLD']}{COLORS['GREEN']}12){COLORS['RESET']} 🖥️ Launch Desktop GUI (Tkinter)              (Multi-tab Desktop Interface)
+  {COLORS['RED']}13){COLORS['RESET']} ❌ Exit
 """
     while True:
         print(menu)
-        choice = input("Enter option [1-12]: ").strip()
+        choice = input("Enter option [1-13]: ").strip()
         if choice == "1":
             handle_sniffer()
         elif choice == "2":
@@ -281,9 +288,11 @@ def run_interactive_menu():
         elif choice == "10":
             run_interactive_ssh_menu()
         elif choice == "11":
-            handle_launch_gui()
+            handle_network_port_tester()
         elif choice == "12":
+            handle_launch_gui()
+        elif choice == "13":
             print(f"\n{COLORS['CYAN']}[*] Goodbye!{COLORS['RESET']}")
             sys.exit(0)
         else:
-            print(f"{COLORS['RED']}[-] Invalid option. Please select 1-12.{COLORS['RESET']}")
+            print(f"{COLORS['RED']}[-] Invalid option. Please select 1-13.{COLORS['RESET']}")

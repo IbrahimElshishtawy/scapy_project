@@ -13,6 +13,7 @@ from .gateway_tab import GatewayTab
 from .beacon_tab import BeaconTab
 from .http_tab import HttpTab
 from .ssh_tab import SshTab
+from .net_tester_tab import NetTesterTab
 
 __all__ = [
     "BaseTab",
@@ -26,4 +27,5 @@ __all__ = [
     "BeaconTab",
     "HttpTab",
     "SshTab",
+    "NetTesterTab",
 ]

@@ -9,6 +9,14 @@ from .gateway_scanner import (
     scan_router_ports,
     evaluate_router_security,
 )
+from .network_tester import (
+    detect_local_network_context,
+    discover_active_hosts,
+    test_service_port,
+    scan_and_test_host,
+    run_network_audit,
+    DEFAULT_TEST_PORTS,
+)
 
 __all__ = [
     "scan_network",
@@ -18,4 +26,10 @@ __all__ = [
     "get_default_gateway",
     "scan_router_ports",
     "evaluate_router_security",
+    "detect_local_network_context",
+    "discover_active_hosts",
+    "test_service_port",
+    "scan_and_test_host",
+    "run_network_audit",
+    "DEFAULT_TEST_PORTS",
 ]
