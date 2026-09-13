@@ -44,7 +44,8 @@ scapy_project/
     ├── packet_crafter.py    # بناء الحزم المخصصة (IP, TCP, UDP, send, sendp)
     ├── wifi_manager.py      # فحص الشبكات، الباسوردات المحفوظة، الاتصال، وتدقيق الباسورد
     ├── gateway_scanner.py   # الاكتشاف التلقائي للراوتر وفحص منافذه وخدماته
-    └── wifi_sniffer.py      # تشريح حزم 802.11 Beacons وتحليل التشفير (WPA2/WPA3)
+    ├── wifi_sniffer.py      # تشريح حزم 802.11 Beacons وتحليل التشفير (WPA2/WPA3)
+    └── http_recon.py        # استكشاف الويب والـ APIs وترويسات الأمان (Requests)
 ```
 
 ---
@@ -52,7 +53,7 @@ scapy_project/
 ## 🚀 التثبيت والتشغيل
 
 ### 1. تفعيل البيئة الافتراضية
-المشروع جاهز ومثبت بداخله Scapy:
+المشروع جاهز ومثبت بداخله Scapy و Requests:
 ```bash
 source venv/bin/activate
 ```
@@ -85,7 +86,8 @@ Select an operation:
   6) 📶 Wi-Fi Manager & Saved Password Recovery   (Scan, Passwords, Connect, Audit)
   7) 🌐 Router Gateway Auto-Discovery & Port Scan (Auto-detect router, Scan services)
   8) 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
-  9) ❌ Exit
+  9) 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
+  10) ❌ Exit
 ```
 
 ---
@@ -204,6 +206,19 @@ sudo ./venv/bin/python main.py
 
 ---
 
+### 9) 🌍 استكشاف الويب والـ APIs عبر Requests (HTTP Reconnaissance)
+* **ماذا تفعل؟**: تتيح التعامل مع بروتوكول HTTP/HTTPS، فحص حالة وسرعة المواقع، استخراج Server Banners وترويسات الأمان (HSTS, CSP, X-Frame-Options)، الاستعلام عن IP Geolocation & ASN عبر APIs، وإرسال طلبات POST وجلسات Session.
+* **خطوات الاستخدام**:
+  1. اختر الرقم `9`.
+  2. ستظهر قائمة فرعية بخيارات متعددة:
+     - `1`: فحص الموقع وحساب زمن الاستجابة والـ Server Banner عبر `requests.get()`.
+     - `2`: تدقيق ترويسات الأمان (Security Headers Audit) بنسبة مئوية.
+     - `3`: جمع معلومات الـ OSINT والـ Threat Intelligence لأي IP أو دومين عبر `response.json()`.
+     - `4`: إرسال طلب POST مخصص مع بيانات Form أو JSON.
+     - `5`: تجربة حفظ جلسة اتصال دائمة والـ Cookies عبر `requests.Session()`.
+
+---
+
 ## 💻 تشغيل الوحدات بشكل مستقل (Standalone Execution)
 
 يمكنك أيضاً تشغيل أي وحدة برمجية مباشرة عبر سطر الأوامر دون فتح القائمة التفاعلية:
@@ -232,6 +247,9 @@ sudo ./venv/bin/python modules/sniffer.py "tcp and port 80"
 
 # 8. تجربة بناء وإرسال حزمة مخصصة
 sudo ./venv/bin/python modules/packet_crafter.py
+
+# 9. تشغيل أداة استكشاف الويب والـ APIs عبر Requests (لا يحتاج sudo)
+./venv/bin/python modules/http_recon.py
 ```
 
 ---
@@ -275,4 +293,24 @@ from scapy.all import rdpcap
 
 packets = rdpcap("captures/http_traffic.pcap")
 packets[0].show()  # تشريح الحزمة كاملة بالتفصيل
+```
+
+### 5. استكشاف الويب والـ APIs عبر `requests`:
+```python
+import requests
+
+# 1. إرسال GET وفحص كود الرد والترويسات
+resp = requests.get("https://api.github.com", headers={"User-Agent": "MyScanner/1.0"})
+print("Status Code:", resp.status_code)
+print("Server:", resp.headers.get("Server"))
+
+# 2. تحويل الرد إلى JSON
+data = resp.json()
+print("Current User URL:", data.get("current_user_url"))
+
+# 3. استخدام Session لحفظ الـ Cookies والجلسة
+session = requests.Session()
+session.headers.update({"Authorization": "Bearer TOKEN"})
+r = session.get("https://httpbin.org/cookies/set/token/xyz123")
+print("Cookies preserved in session:", len(session.cookies))
 ```

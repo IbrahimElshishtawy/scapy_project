@@ -38,6 +38,7 @@ from modules.gateway_scanner import (
     scan_router_ports
 )
 from modules.wifi_sniffer import live_beacon_sniff, analyze_wireless_pcap
+from modules.http_recon import run_interactive_http_menu
 
 # Terminal colors
 CLR_CYAN = "\033[96m"
@@ -292,11 +293,12 @@ def main():
   {CLR_CYAN}6){CLR_RESET} 📶 Wi-Fi Manager & Saved Password Recovery   (Scan, Passwords, Connect, Audit)
   {CLR_CYAN}7){CLR_RESET} 🌐 Router Gateway Auto-Discovery & Port Scan (Auto-detect router, Scan services)
   {CLR_CYAN}8){CLR_RESET} 🛡️ 802.11 Wi-Fi Beacon Security Inspector    (WPA2/WPA3 Dissection)
-  {CLR_RED}9){CLR_RESET} ❌ Exit
+  {CLR_CYAN}9){CLR_RESET} 🌍 HTTP & Web Reconnaissance (Requests)       (GET, POST, Headers, APIs, Session)
+  {CLR_RED}10){CLR_RESET} ❌ Exit
 """
     while True:
         print(menu)
-        choice = input("Enter option [1-9]: ").strip()
+        choice = input("Enter option [1-10]: ").strip()
         if choice == "1":
             handle_sniffer()
         elif choice == "2":
@@ -314,10 +316,12 @@ def main():
         elif choice == "8":
             handle_wifi_beacon_sniffer()
         elif choice == "9":
+            run_interactive_http_menu()
+        elif choice == "10":
             print(f"\n{CLR_CYAN}[*] Goodbye!{CLR_RESET}")
             sys.exit(0)
         else:
-            print(f"{CLR_RED}[-] Invalid option. Please select 1-9.{CLR_RESET}")
+            print(f"{CLR_RED}[-] Invalid option. Please select 1-10.{CLR_RESET}")
 
 
 if __name__ == "__main__":

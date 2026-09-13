@@ -15,6 +15,7 @@
 7. [مدير شبكات الواي فاي واسترجاع كلمات المرور (wifi_manager.py)](#7-مدير-شبكات-الواي-فاي-واسترجاع-كلمات-المرور-wifi_managerpy)
 8. [مكتشف الراوتر وفاحص منافذه وخدماته (gateway_scanner.py)](#8-مكتشف-الراوتر-وفاحص-منافذه-وخدماته-gateway_scannerpy)
 9. [فاحص حزم الـ 802.11 Beacons وتحليل التشفير (wifi_sniffer.py)](#9-فاحص-حزم-الـ-80211-beacons-وتحليل-التشفير-wifi_snifferpy)
+10. [أداة استكشاف الويب والـ APIs عبر Requests (http_recon.py)](#10-أداة-استكشاف-الويب-والـ-apis-عبر-requests-http_reconpy)
 
 ---
 
@@ -246,6 +247,63 @@ sudo ./venv/bin/python modules/wifi_sniffer.py
 
 # فحص ملف التقاط لاسلكي مسجل مسبقاً
 ./venv/bin/python modules/wifi_sniffer.py captures/wireless_sample.pcap
+```
+
+---
+
+## 10. أداة استكشاف الويب والـ APIs عبر Requests (`http_recon.py`)
+
+### 📌 الوصف:
+أداة مخصصة لبروتوكول HTTP/HTTPS والتفاعل مع خوادم الويب وخدمات الـ REST APIs السحابية، وفحص حالة المواقع، وسحب الـ Server Banners، وتحليل ترويسات الأمان (Security Headers)، وجمع معلومات الـ OSINT والـ Threat Intelligence لعناوين الـ IP.
+
+### ⚙️ كيف تعمل برمجياً؟
+- **`requests.get(url)`**: ترسل طلب HTTP GET، تحسب زمن الاستجابة بالميلي ثانية (Latency)، وتتأكد ما إذا كان السيرفر يعمل.
+- **`response.status_code`**: تفحص كود الاستجابة بالألوان (200 OK، 301 Redirect، 403 Forbidden، 404 Not Found، 500 Server Error).
+- **`response.headers`**: تستخرج خادم الويب (`Server` / `X-Powered-By`) وتفحص ترويسات الأمان الحرجة:
+  - `Strict-Transport-Security` (HSTS)
+  - `Content-Security-Policy` (CSP)
+  - `X-Frame-Options` (الحماية من Clickjacking)
+  - `X-Content-Type-Options` (الحماية من MIME-sniffing)
+- **`response.json()`**: تتواصل مع واجهات برمجة التطبيقات (APIs) وتقوم بتحويل نصوص الرد إلى كائنات بايثون (Dictionaries)، مثل الاستعلام عن Geolocation والـ ASN ومزود الخدمة (ISP) لعنوان الـ IP.
+- **`requests.post(url, data/json)`**: ترسل بيانات ونماذج إلى الخادم مثل تسجيل الدخول أو إرسال payloads.
+- **`requests.Session()`**: تنشئ جلسة اتصال دائمة تحتفظ بالـ Cookies والترويسات المخصصة عبر عدة طلبات متتالية.
+
+### 💻 أمر التشغيل المباشر:
+*(ملاحظة: لا تتطلب صلاحيات sudo لأنها تعمل على طبقة التطبيقات عبر اتصالات المستخدم العادية)*
+```bash
+# تشغيل القائمة التفاعلية لأداة Requests
+./venv/bin/python modules/http_recon.py
+
+# فحص موقع مباشرة من سطر الأوامر (مثال)
+./venv/bin/python modules/http_recon.py google.com
+```
+
+### 📋 مخرجات نموذجية:
+```text
+[*] Sending GET request to: https://github.com ...
+=================================================================
+             HTTP GET INSPECTION RESULT
+=================================================================
+Target URL       : https://github.com/
+Status Code      : 200 OK
+Response Time    : 184.2 ms
+Content Length   : 577121 bytes
+Server Banner    : github.com
+=================================================================
+
+======================================================================
+             HTTP RESPONSE HEADERS & SECURITY AUDIT
+======================================================================
+Header                       | Status       | Description
+----------------------------------------------------------------------
+Strict-Transport-Security    | Present     | HSTS - Enforces HTTPS communication
+Content-Security-Policy      | Present     | CSP - Mitigates XSS and data injection attacks
+X-Frame-Options              | Present     | Prevents Clickjacking attacks in iframes
+X-Content-Type-Options       | Present     | Prevents MIME-sniffing vulnerabilities
+Referrer-Policy              | Present     | Controls referrer information passed
+Permissions-Policy           | Missing     | Controls browser features allowed
+======================================================================
+Security Headers Score: 5/6 (83.3%)
 ```
 
 ---
