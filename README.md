@@ -25,30 +25,93 @@
 
 ---
 
-## 📁 هيكل المشروع (Project Structure)
+## 📁 هيكل المشروع ومعمارية الكود (Enterprise Modular Architecture v2.0)
+
+تم تصميم المشروع وفق معمارية معيارية متعددة الطبقات (Layered Modular Clean Architecture) تفصل بين منطق الشبكات وحزم Scapy وبين واجهات المستخدم (CLI / GUI) مع الحفاظ على التوافق الكامل (100% Backward Compatibility):
 
 ```text
 scapy_project/
-├── main.py                  # القائمة التفاعلية الرئيسية في الطرفية (Interactive CLI Menu)
-├── gui.py                   # واجهة المستخدم الرسومية الشاملة لسطح المكتب بـ Tkinter (Desktop GUI)
-├── sniffer.py               # السكريبت الأساسي البسيط للمراقبة المباشرة
-├── requirements.txt         # متطلبات المشروع
-├── README.md                # دليل الاستخدام والشرح
-├── TOOLS_GUIDE.md           # الدليل التفصيلي المرجعي لكل أداة
-├── captures/                # مجلد حفظ ملفات الالتقاط (.pcap)
-│   └── sample_test.pcap     # ملف pcap تجريبي لاختبار التحليل
-└── modules/
-    ├── __init__.py
-    ├── arp_scanner.py       # اكتشاف الأجهزة المحلية (ARP, Ether, srp)
-    ├── port_scanner.py      # فحص المنافذ والـ Ping (sr1, IP, TCP, ICMP)
-    ├── sniffer.py           # المراقبة المتقدمة والحفظ (sniff, wrpcap)
-    ├── pcap_analyzer.py     # تحليل ملفات الـ PCAP (rdpcap, .show)
-    ├── packet_crafter.py    # بناء الحزم المخصصة (IP, TCP, UDP, send, sendp)
-    ├── wifi_manager.py      # فحص الشبكات، الباسوردات المحفوظة، الاتصال، وتدقيق الباسورد
-    ├── gateway_scanner.py   # الاكتشاف التلقائي للراوتر وفحص منافذه وخدماته
-    ├── wifi_sniffer.py      # تشريح حزم 802.11 Beacons وتحليل التشفير (WPA2/WPA3)
-    ├── http_recon.py        # استكشاف الويب والـ APIs وترويسات الأمان (Requests)
-    └── ssh_manager.py       # إدارة السيرفرات وتنفيذ الأوامر ونقل الملفات عن بعد (Paramiko)
+├── main.py                     # نقطة تشغيل الطرفية الرئيسية (CLI Entrypoint)
+├── gui.py                      # نقطة تشغيل الواجهة الرسومية (GUI Desktop Entrypoint)
+├── sniffer.py                  # سكريبت مستقل وسريع للالتقاط المباشر
+├── requirements.txt            # مكتبات ومتطلبات المشروع
+├── pyproject.toml              # ملف التكوين والحزم القياسي لبايثون
+├── README.md                   # التوثيق الشامل والمعماري للمشروع
+├── TOOLS_GUIDE.md              # الدليل المرجعي والتشغيلي للأدوات
+├── captures/                   # مجلد حفظ ملفات الالتقاط (.pcap)
+│   └── sample_test.pcap        # ملف pcap تجريبي لاختبار التحليل
+│
+├── core/                       # الطبقة الأساسية المشتركة (Core Infrastructure)
+│   ├── __init__.py
+│   ├── config.py               # الإعدادات العامة، المسارات، وثوابت المنافذ
+│   ├── privileges.py           # فحص وإدارة صلاحيات الـ Root / Sudo
+│   ├── logger.py               # مسجل الأحداث الموحد الملوّن لجميع الواجهات
+│   └── network_utils.py        # التحقق من الـ IP وكروت الشبكة والمسارات
+│
+├── services/                   # طبقة خدمات المنطق البرمجي (Domain Services)
+│   ├── __init__.py
+│   ├── packet/                 # خدمات حزم الشبكة (الالتقاط، التحليل، والصناعة)
+│   │   ├── __init__.py
+│   │   ├── sniffer_service.py  # التقاط الحزم وتطبيق فلاتر BPF المتقدمة
+│   │   ├── pcap_service.py     # قراءة ملفات PCAP وتشريح الحزم بـ .show()
+│   │   └── crafter_service.py  # بناء وتزييف حزم IP/TCP/UDP/ICMP/Ethernet
+│   ├── scanner/                # خدمات الفحص والاستطلاع
+│   │   ├── __init__.py
+│   │   ├── arp_scanner.py      # اكتشاف الأجهزة المحلية عبر ARP Broadcast
+│   │   ├── port_scanner.py     # فحص Ping واستطلاع منافذ TCP SYN Scan
+│   │   └── gateway_scanner.py  # الاكتشاف التلقائي لراوتر الشبكة ومنافذه
+│   ├── wireless/               # خدمات الواي فاي والشبكات اللاسلكية
+│   │   ├── __init__.py
+│   │   ├── wifi_manager.py     # مسح الشبكات، استرجاع الباسوردات، والاتصال
+│   │   ├── beacon_analyzer.py  # تشريح حزم 802.11 Beacons وتحليل WPA2/WPA3
+│   │   └── password_auditor.py # قياس إنتروبيا شانون وتدقيق قوة كلمة المرور
+│   ├── web/                    # خدمات استكشاف الويب والـ APIs عبر Requests
+│   │   ├── __init__.py
+│   │   └── http_recon.py       # تدقيق ترويسات الأمان واستعلامات Threat Intel
+│   └── remote/                 # خدمات التحكم بالسيرفرات عن بعد عبر Paramiko
+│       ├── __init__.py
+│       └── ssh_manager.py      # اتصال مشفر، تدقيق أمني للنظام، ونقل SFTP
+│
+├── cli/                        # طبقة واجهة سطر الأوامر (Terminal UI)
+│   ├── __init__.py
+│   ├── banner.py               # شعار المشروع ولوحات ألوان الطرفية
+│   └── menu.py                 # القائمة التفاعلية وموجهات الأوامر
+│
+├── gui/                        # معمارية واجهة المستخدم الرسومية بـ Tkinter
+│   ├── __init__.py
+│   ├── app.py                  # النافذة الرئيسية ودورة حياة التطبيق
+│   ├── theme.py                # محرك ثيم Catppuccin Mocha الداكن وأنماط ttk
+│   ├── widgets/                # مكونات واجهة رسومية قابلة لإعادة الاستخدام
+│   │   ├── __init__.py
+│   │   ├── log_console.py      # شاشة السجل المباشر مع أزرار الحفظ والمسح
+│   │   ├── packet_dialog.py    # نافذة فاحص الحزم المنبثقة (.show())
+│   │   └── status_bar.py       # شريط الصلاحيات العلوي ومعلومات الحالة
+│   └── tabs/                   # تبويبات الأدوات (10 ملفات تبويب مستقلة)
+│       ├── __init__.py
+│       ├── base_tab.py         # الكلاس الأساسي المشترك مع إدارة الـ Threading
+│       ├── sniffer_tab.py      # تبويب التقاط الحزم
+│       ├── pcap_tab.py         # تبويب تحليل ملفات PCAP
+│       ├── arp_tab.py          # تبويب فاحص ARP المحلي
+│       ├── port_tab.py         # تبويب فاحص المنافذ والـ Ping
+│       ├── crafter_tab.py      # تبويب صانع ومُرسل الحزم
+│       ├── wifi_tab.py         # تبويب إدارة شبكات الواي فاي
+│       ├── gateway_tab.py      # تبويب فاحص راوتر الشبكة
+│       ├── beacon_tab.py       # تبويب تشريح الـ Beacons
+│       ├── http_tab.py         # تبويب استكشاف الويب والـ APIs
+│       └── ssh_tab.py          # تبويب إدارة السيرفرات والـ SFTP
+│
+└── modules/                    # طبقة التوافق الخلفي (Backward Compatibility Layer)
+    ├── __init__.py             # إعادة تصدير كافة الخدمات لضمان عمل أي استدعاء قديم
+    ├── arp_scanner.py
+    ├── gateway_scanner.py
+    ├── http_recon.py
+    ├── packet_crafter.py
+    ├── pcap_analyzer.py
+    ├── port_scanner.py
+    ├── sniffer.py
+    ├── ssh_manager.py
+    ├── wifi_manager.py
+    └── wifi_sniffer.py
 ```
 
 ---
